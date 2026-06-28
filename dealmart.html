@@ -5,10 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- 0秒无感跳转核心代码 -->
     <meta http-equiv="refresh" content="0; URL='https://www.codester.com/items/61485/dealmart-ultimate-php-affiliate-deals-coupons?ref=fire1314'">
-    <script>
-        // 双重保障：用 JS 进行极速替换跳转，防止部分浏览器对 meta-refresh 限制或延迟
-        window.location.replace('https://www.codester.com/items/61485/dealmart-ultimate-php-affiliate-deals-coupons?ref=fire1314');
-    </script>
     <title>Redirecting...</title>
     <style>
         body {
@@ -101,5 +97,72 @@
         <div class="subtitle">Please wait while we redirect you to the promotion.</div>
         <a class="fallback-link" href="https://www.codester.com/items/61485/dealmart-ultimate-php-affiliate-deals-coupons?ref=fire1314">Click here if you are not redirected</a>
     </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { initializeFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD8xUKkp_UxO5t0zdyRKy3VVgrrp03PfFk",
+            authDomain: "gen-lang-client-0746300490.firebaseapp.com",
+            projectId: "gen-lang-client-0746300490",
+            storageBucket: "gen-lang-client-0746300490.firebasestorage.app",
+            messagingSenderId: "244023005275",
+            appId: "1:244023005275:web:aa3b13577b3368816eef7e"
+        };
+
+        // Function to perform the redirect
+        function doRedirect() {
+            window.location.replace('https://www.codester.com/items/61485/dealmart-ultimate-php-affiliate-deals-coupons?ref=fire1314');
+        }
+
+        // Set safety timeout (1.5s)
+        const safetyTimeout = setTimeout(doRedirect, 1500);
+
+        try {
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const db = initializeFirestore(app, {
+                databaseId: "ai-studio-30b08fd7-107a-4584-b5e2-c6a1646499f9"
+            });
+
+            // Gather tracking data
+            const userAgent = navigator.userAgent;
+            const referrer = document.referrer || "Direct";
+            
+            let deviceType = "Desktop";
+            if (/Mobi|Android|iPhone|iPad|iPod/i.test(userAgent)) {
+                deviceType = "Mobile";
+            } else if (/Tablet|iPad/i.test(userAgent)) {
+                deviceType = "Tablet";
+            }
+
+            // Fetch IP location data
+            const ipResponse = await fetch('https://ipapi.co/json/')
+                .then(res => res.json())
+                .catch(() => ({}));
+
+            const trackingData = {
+                shortCode: "dealmart",
+                userAgent: userAgent,
+                referrer: referrer,
+                deviceType: deviceType,
+                ip: ipResponse.ip || "Unknown",
+                city: ipResponse.city || "Unknown",
+                region: ipResponse.region || "Unknown",
+                country: ipResponse.country_name || "Unknown",
+                timestamp: serverTimestamp()
+            };
+
+            // Save to Firestore
+            await addDoc(collection(db, "clicks"), trackingData);
+        } catch (e) {
+            console.error("Tracking error:", e);
+        } finally {
+            clearTimeout(safetyTimeout);
+            doRedirect();
+        }
+    </script>
 </body>
 </html>
