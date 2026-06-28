@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- 0秒无感跳转核心代码 -->
-    <meta http-equiv="refresh" content="0; URL='https://www.codester.com/items/65031/devlumiq-hrms-next-js-hr-management-system?ref=fire1314'">
+    <!-- 仅在 JavaScript 被禁用时，才使用 meta-refresh 进行兜底 0 秒无感跳转 -->
+    <noscript>
+        <meta http-equiv="refresh" content="0; URL='https://www.codester.com/items/65031/devlumiq-hrms-next-js-hr-management-system?ref=fire1314'">
+    </noscript>
     <title>Redirecting...</title>
     <style>
         body {
@@ -100,7 +102,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { initializeFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // Firebase configuration
         const firebaseConfig = {
@@ -117,15 +119,28 @@
             window.location.replace('https://www.codester.com/items/65031/devlumiq-hrms-next-js-hr-management-system?ref=fire1314');
         }
 
-        // Set safety timeout (1.5s)
-        const safetyTimeout = setTimeout(doRedirect, 1500);
+        // Set safety timeout (3.0s) to guarantee redirection even if database calls lag
+        const safetyTimeout = setTimeout(doRedirect, 3000);
+
+        // Helper to fetch IP data with strict timeout of 800ms
+        const fetchIpData = async () => {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 800);
+            try {
+                const res = await fetch('https://ipapi.co/json/', { signal: controller.signal });
+                clearTimeout(timeoutId);
+                return await res.json();
+            } catch (err) {
+                clearTimeout(timeoutId);
+                console.warn("IP fetch timed out or failed, using default values.");
+                return {};
+            }
+        };
 
         try {
-            // Initialize Firebase
+            // Initialize Firebase with multi-db support
             const app = initializeApp(firebaseConfig);
-            const db = initializeFirestore(app, {
-                databaseId: "ai-studio-30b08fd7-107a-4584-b5e2-c6a1646499f9"
-            });
+            const db = getFirestore(app, "ai-studio-30b08fd7-107a-4584-b5e2-c6a1646499f9");
 
             // Gather tracking data
             const userAgent = navigator.userAgent;
@@ -138,10 +153,8 @@
                 deviceType = "Tablet";
             }
 
-            // Fetch IP location data
-            const ipResponse = await fetch('https://ipapi.co/json/')
-                .then(res => res.json())
-                .catch(() => ({}));
+            // Fetch IP location data (non-blocking if it times out)
+            const ipResponse = await fetchIpData();
 
             const trackingData = {
                 shortCode: "devlumiq",
